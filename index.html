@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wojnicki Builder Log</title>
+<meta name="description" content="Paul J. Wojnicki, Ph.D. — AI and software architect. Live builds, the method behind them, and a career-long signal from 2002 ML research to production agents.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: night-shift instrument panel. Oscilloscope hero, then a rack of build "channels",
+   a method spec sheet, a career trace read top to bottom, one killed project, a contact plate. */
+:root{
+  --ink:#0E1217; --panel:#141A21; --panel2:#1A222B; --line:#28323D;
+  --fg:#ECE6D9; --dim:#8E98A2; --amber:#F2A33A; --amber-soft:rgba(242,163,58,.14);
+  --ok:#86CBAA; --hold:#E0906E;
+  --display:"Big Shoulders Display","Oswald","Arial Narrow",Impact,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --grid:rgba(236,230,217,.055);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --ink:#EDE9E0; --panel:#F6F3ED; --panel2:#FBF9F5; --line:#D2CBBD;
+  --fg:#151A20; --dim:#5A6470; --amber:#B25E0C; --amber-soft:rgba(178,94,12,.10);
+  --ok:#2E7457; --hold:#A44A28; --grid:rgba(21,26,32,.06); color-scheme:light;}}
+:root[data-theme="light"]{
+  --ink:#EDE9E0; --panel:#F6F3ED; --panel2:#FBF9F5; --line:#D2CBBD;
+  --fg:#151A20; --dim:#5A6470; --amber:#B25E0C; --amber-soft:rgba(178,94,12,.10);
+  --ok:#2E7457; --hold:#A44A28; --grid:rgba(21,26,32,.06); color-scheme:light;}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.6;margin:0;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:clamp(16px,4vw,40px)}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:2px}
+h1,h2,h3{text-wrap:balance;margin:0}
+p{margin:0}
+.mono{font-family:var(--mono)}
+.label{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--ink) 86%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:24px;padding-block:14px}
+.mark{font-family:var(--display);font-weight:900;font-size:22px;letter-spacing:.04em;text-decoration:none;display:flex;align-items:center;gap:10px}
+.mark i{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 12px var(--amber);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+.nav ul{display:flex;gap:22px;list-style:none;margin:0 0 0 auto;padding:0}
+.nav ul a{font-family:var(--mono);font-size:13px;text-decoration:none;color:var(--dim)}
+.nav ul a:hover{color:var(--fg)}
+.loc{font-family:var(--mono);font-size:12px;color:var(--dim);white-space:nowrap}
+@media (max-width:760px){.nav ul{display:none}.loc{margin-left:auto}}
+
+/* hero */
+.hero{padding-block:clamp(48px,8vw,96px) 32px}
+.hero .who{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline;margin-bottom:22px}
+.hero h1{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(56px,11vw,152px);line-height:.86;letter-spacing:-.005em}
+.hero h1 span{color:var(--amber)}
+.hero .lede{max-width:60ch;font-size:clamp(17px,1.6vw,20px);color:var(--fg);margin-top:28px;opacity:.92}
+.hero .lede em{font-style:normal;color:var(--amber)}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.btn{font-family:var(--mono);font-size:14px;text-decoration:none;padding:12px 18px;border:1px solid var(--line);display:inline-flex;gap:10px;align-items:center;transition:border-color .2s,background .2s}
+.btn:hover{border-color:var(--amber)}
+.btn.primary{background:var(--amber);color:var(--ink);border-color:var(--amber);font-weight:500}
+.btn.primary:hover{background:transparent;color:var(--amber)}
+
+/* scope */
+.scope{margin:48px 0 0;border:1px solid var(--line);background:var(--panel)}
+.scope-head,.scope-foot{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;padding:10px 16px;font-family:var(--mono);font-size:12px;color:var(--dim)}
+.scope-head{border-bottom:1px solid var(--line)}
+.scope-foot{border-top:1px solid var(--line)}
+.scope-head b,.scope-foot b{color:var(--fg);font-weight:500}
+.scope canvas{display:block;width:100%;height:clamp(250px,30vw,340px)}
+.readouts{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.readouts div{padding:14px 16px;border-right:1px solid var(--line);min-width:0}
+.readouts div:last-child{border-right:0}
+.readouts strong{display:block;font-family:var(--display);font-weight:800;font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums}
+.readouts span{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+@media (max-width:700px){.readouts{grid-template-columns:repeat(2,1fr)}.readouts div:nth-child(2){border-right:0}.readouts div:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+
+/* sections */
+section{padding-block:clamp(64px,9vw,112px)}
+.sec-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:24px 48px;align-items:end;margin-bottom:40px}
+.sec-head h2{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:clamp(40px,6vw,76px);line-height:.9}
+.sec-head p{color:var(--dim);max-width:58ch}
+@media (max-width:800px){.sec-head{grid-template-columns:1fr}}
+
+/* builds rack */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.filters button{font-family:var(--mono);font-size:12px;background:transparent;color:var(--dim);border:1px solid var(--line);padding:7px 12px;cursor:pointer}
+.filters button[aria-pressed="true"]{color:var(--ink);background:var(--fg);border-color:var(--fg)}
+.rack{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
+@media (max-width:820px){.rack{grid-template-columns:1fr}}
+.ch{position:relative;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:26px 24px 22px;display:flex;flex-direction:column;gap:14px;min-width:0;background:var(--ink);transition:background .25s}
+.ch:hover{background:var(--panel)}
+.ch-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ch-id{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.state{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+.state::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.state.live{color:var(--ok)} .state.dev{color:var(--amber)}
+.ch h3{font-family:var(--display);font-weight:800;font-size:40px;line-height:.95;text-transform:uppercase}
+.ch .what{color:var(--fg);opacity:.9}
+.guard{border-left:2px solid var(--amber);padding:2px 0 2px 12px;font-size:14px;color:var(--dim)}
+.guard b{color:var(--fg);font-weight:500;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:2px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tags span{font-family:var(--mono);font-size:11px;color:var(--dim);border:1px solid var(--line);padding:3px 8px}
+.links{display:flex;flex-wrap:wrap;gap:18px;margin-top:auto;padding-top:6px}
+.links a{font-family:var(--mono);font-size:13px;text-decoration:none;color:var(--amber);border-bottom:1px solid transparent}
+.links a:hover{border-bottom-color:var(--amber)}
+.ch.feature{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px 40px;background:var(--panel)}
+.ch.feature h3{font-size:clamp(48px,6vw,72px)}
+.ch.feature .col{display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (max-width:820px){.ch.feature{grid-template-columns:1fr}}
+.ch[hidden]{display:none!important}
+.ch.wide{grid-column:1/-1}
+
+/* method */
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.spec div{background:var(--ink);padding:24px 20px;display:flex;flex-direction:column;gap:10px}
+.spec code{font-family:var(--mono);font-size:12px;color:var(--amber)}
+.spec h3{font-family:var(--display);font-weight:800;font-size:28px;line-height:1;text-transform:uppercase}
+.spec p{font-size:14.5px;color:var(--dim)}
+
+/* career trace */
+.trace{position:relative;display:grid;gap:0}
+.trace::before{content:"";position:absolute;left:118px;top:8px;bottom:8px;width:1px;background:var(--line)}
+.trace .fill{position:absolute;left:118px;top:8px;width:1px;background:var(--amber);height:0;box-shadow:0 0 8px var(--amber)}
+.ev{display:grid;grid-template-columns:118px minmax(0,1fr);gap:0 36px;padding-block:22px;position:relative}
+.ev .yr{font-family:var(--mono);font-size:14px;color:var(--dim);padding-top:4px;font-variant-numeric:tabular-nums}
+.ev::after{content:"";position:absolute;left:113px;top:31px;width:11px;height:11px;border-radius:50%;background:var(--ink);border:1px solid var(--dim);transition:all .3s}
+.ev.on::after{background:var(--amber);border-color:var(--amber);box-shadow:0 0 10px var(--amber)}
+.ev .body{padding-left:24px;max-width:70ch}
+.ev h3{font-family:var(--display);font-weight:800;font-size:clamp(26px,3vw,34px);line-height:1;text-transform:uppercase;margin-bottom:8px}
+.ev .org{font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;display:block}
+.ev p{color:var(--dim)}
+@media (max-width:600px){
+  .trace::before,.trace .fill{left:6px}
+  .ev{grid-template-columns:1fr;padding-left:26px}
+  .ev::after{left:1px}
+  .ev .body{padding-left:0;margin-top:4px}
+}
+
+/* killed */
+.killed{border:1px dashed var(--hold);padding:clamp(24px,4vw,48px);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:24px 48px;position:relative}
+.killed .stamp{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--hold);border:1px solid var(--hold);display:inline-block;padding:5px 10px;transform:rotate(-2deg);margin-bottom:18px}
+.killed h2{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(44px,6vw,80px);line-height:.88}
+.killed h2 s{text-decoration-color:var(--hold);text-decoration-thickness:4px;color:var(--dim)}
+.killed ol{margin:0;padding:0;list-style:none;display:grid;gap:16px;counter-reset:k}
+.killed li{display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;color:var(--dim)}
+.killed li::before{counter-increment:k;content:counter(k,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--hold);padding-top:4px}
+.killed li b{color:var(--fg);font-weight:500}
+.killed blockquote{margin:8px 0 0;font-family:var(--display);font-weight:600;font-size:clamp(24px,2.6vw,32px);line-height:1.1;color:var(--fg)}
+@media (max-width:800px){.killed{grid-template-columns:1fr}}
+
+/* contact */
+.plate{border-top:1px solid var(--line);padding-block:clamp(64px,9vw,112px) 40px}
+.plate h2{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(52px,10vw,140px);line-height:.85}
+.plate h2 span{color:var(--amber)}
+.contact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:40px}
+.contact > *{background:var(--ink);padding:20px;display:flex;flex-direction:column;gap:6px;text-decoration:none;min-width:0}
+.contact a:hover{background:var(--panel)}
+.contact .v{font-family:var(--mono);font-size:15px;overflow-wrap:anywhere}
+.copy{align-self:flex-start;font-family:var(--mono);font-size:12px;background:transparent;color:var(--amber);border:1px solid var(--line);padding:5px 10px;cursor:pointer;margin-top:4px}
+@media (max-width:760px){.contact{grid-template-columns:1fr}}
+footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding-block:28px 40px;font-family:var(--mono);font-size:12px;color:var(--dim)}
+
+
+/* build spec sheet */
+.built{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 16px;margin:0;padding:14px 0 2px;border-top:1px dashed var(--line);font-size:14px}
+.built dt{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);padding-top:3px;white-space:nowrap}
+.built dd{margin:0;color:var(--fg);opacity:.86;min-width:0}
+.ch.feature .built{border-top:0;padding-top:0}
+.shot{font-family:var(--mono);font-size:13px;background:transparent;color:var(--fg);border:1px solid var(--line);padding:3px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.shot::before{content:"";width:12px;height:9px;border:1px solid currentColor;border-radius:1px;box-shadow:inset 0 -3px 0 -1px currentColor}
+.shot:hover{border-color:var(--amber);color:var(--amber)}
+.alt{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.alt a{color:var(--dim)}
+.muted{font-family:var(--mono);font-size:13px;color:var(--dim)}
+
+/* stack matrix */
+.matrix-wrap{overflow-x:auto;border:1px solid var(--line)}
+.matrix{border-collapse:collapse;width:100%;min-width:900px;font-size:13px}
+.matrix th,.matrix td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.matrix thead th{font-family:var(--display);font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:.02em;background:var(--panel);position:sticky;top:0}
+.matrix tbody th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);font-weight:500;white-space:nowrap;background:var(--panel)}
+.matrix td{font-family:var(--mono);font-size:12px;color:var(--fg)}
+.matrix td:empty::after{content:"·";color:var(--line)}
+.matrix tbody tr:last-child th,.matrix tbody tr:last-child td{border-bottom:0}
+.matrix tbody tr:hover td{background:var(--amber-soft)}
+.matrix td.dot{color:var(--amber)}
+
+/* screenshot viewer */
+.viewer{position:fixed;inset:0;z-index:50;background:rgba(6,8,11,.88);backdrop-filter:blur(6px);display:flex;flex-direction:column;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.viewer-bar{display:flex;align-items:center;gap:12px;color:#ECE6D9;font-family:var(--mono);font-size:13px;max-width:1280px;width:100%;margin:0 auto 12px}
+.viewer-bar b{font-family:var(--display);font-size:24px;letter-spacing:.02em;text-transform:uppercase;font-weight:800}
+.viewer-bar .cap{color:#8E98A2;flex:1;min-width:0}
+.viewer-bar button{font-family:var(--mono);font-size:13px;background:transparent;color:#ECE6D9;border:1px solid #3A4552;padding:6px 12px;cursor:pointer}
+.viewer-bar button:hover{border-color:#F2A33A;color:#F2A33A}
+.viewer figure{margin:0 auto;flex:1;min-height:0;max-width:1280px;width:100%;display:flex;align-items:center;justify-content:center}
+.viewer img{max-width:100%;max-height:100%;object-fit:contain;border:1px solid #3A4552;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+
+/* load-in: visible at rest, gentle lift only */
+.rise{animation:rise .8s cubic-bezier(.2,.7,.2,1) both}
+.rise.d1{animation-delay:.08s}.rise.d2{animation-delay:.16s}.rise.d3{animation-delay:.24s}
+@keyframes rise{from{transform:translateY(14px)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<nav class="nav" aria-label="Primary">
+  <div class="wrap">
+    <a class="mark" href="#top"><i aria-hidden="true"></i>WOJNICKI</a>
+    <ul>
+      <li><a href="#builds">Builds</a></li>
+      <li><a href="#stack">Stack</a></li>
+      <li><a href="#method">Method</a></li>
+      <li><a href="#signal">Signal</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <span class="loc">Hoboken, NJ · <span id="clock">--:--</span> ET</span>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="who rise">
+      <span class="label">Paul J. Wojnicki, Ph.D.</span>
+      <span class="label">AI &amp; software architect</span>
+      <span class="label">Founder, Owlstorm</span>
+    </div>
+    <h1 class="rise d1">Show it<br>working.<br><span>Then explain it.</span></h1>
+    <p class="lede rise d2">I build AI systems that cite their sources, say so when they don't know, and prove both in CI before anyone has to trust them. I've been doing <em>machine learning since 2002</em>, back when you had to forge the hammer before you could build the house.</p>
+    <div class="cta rise d3">
+      <a class="btn primary" href="#builds">See the builds ↓</a>
+      <a class="btn" href="https://github.com/owlstormai" target="_blank" rel="noopener">github.com/owlstormai ↗</a>
+    </div>
+
+    <figure class="scope rise d3" aria-label="Career rendered as a signal trace, 2002 to now">
+      <div class="scope-head"><span>CH1 · <b>CAREER SIGNAL</b></span><span>TIMEBASE 1 yr/div · TRIG <b>ship</b></span><span id="cursorRead">CURSOR · <b>—</b></span></div>
+      <canvas id="scope"></canvas>
+      <div class="readouts">
+        <div><strong>2002</strong><span>First ML system · mammography</span></div>
+        <div><strong>30+</strong><span>AI &amp; automation deployments</span></div>
+        <div><strong>3</strong><span>Companies founded · 1 exit</span></div>
+        <div><strong>200+</strong><span>Graduate engineers taught</span></div>
+      </div>
+    </figure>
+  </div>
+</header>
+
+<main>
+<section id="builds">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Live<br>builds</h2>
+      <p>Every project here has something you can click. The public repos are readable code; the private ones link to the running demo. Each card names the guardrail, because that's the part that decides whether you can put it in front of a customer.</p>
+    </div>
+
+    <div class="filters" role="group" aria-label="Filter builds">
+      <button type="button" id="f-all" data-f="all" aria-pressed="true">All</button>
+      <button type="button" id="f-agent" data-f="agent" aria-pressed="false">Agents</button>
+      <button type="button" id="f-rag" data-f="rag" aria-pressed="false">RAG &amp; evals</button>
+      <button type="button" id="f-health" data-f="health" aria-pressed="false">Healthcare</button>
+      <button type="button" id="f-code" data-f="code" aria-pressed="false">Public code</button>
+    </div>
+
+    <div class="rack" id="rack">
+      <article class="ch feature" data-k="health rag agent">
+        <div class="col">
+          <div class="ch-top"><span class="ch-id">CH-01</span><span class="state live">Live</span></div>
+          <h3>TrendHUD</h3>
+          <p class="what">One longitudinal view across clinical care. TrendHUD connects to a patient's records over SMART on FHIR and lines up every lab and time point against treatment events on one screen. An analytic agent tuned to each of fifteen specialty workflows reads the chart and cites the data points behind every flag.</p>
+          <div class="guard"><b>Guardrail</b>Deterministic clinical thresholds sit in front of retrieval-augmented Claude Opus. The model explains; it never decides what counts as critical.</div>
+          <div class="guard"><b>Ingestion</b>Claude vision reads lab PDFs and maps each value to a FHIR Observation with its LOINC code.</div>
+          <div class="links"><a href="https://trendhud.com" target="_blank" rel="noopener">trendhud.com ↗</a><button type="button" class="shot" id="shot-trendhud" data-shots="trendhud">Screenshots · 3</button></div>
+          <p class="alt">Also at <a href="https://trendhud.app" target="_blank" rel="noopener">trendhud.app</a> and <a href="https://trendme.med" target="_blank" rel="noopener">trendme.med</a></p>
+        </div>
+        <div class="col">
+          <dl class="built">
+            <dt>Deploy</dt><dd>Vercel, auto-deployed from GitHub on every push</dd>
+            <dt>Data</dt><dd>Supabase Postgres, FHIR R4 Observations, LOINC codes</dd>
+            <dt>Auth</dt><dd>SMART on FHIR OAuth 2.0 against Epic MyChart, Oracle Health and InteliChart</dd>
+            <dt>AI</dt><dd>RAG over the patient record with Claude Opus, a Claude Haiku tier for fast passes, Claude vision for lab ingestion</dd>
+            <dt>UI</dt><dd>Synchronized multi-panel charts, voice navigation in English, Spanish and Mandarin</dd>
+            <dt>Built in</dt><dd>Claude Code, end to end</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="ch" data-k="agent rag code">
+        <div class="ch-top"><span class="ch-id">CH-02</span><span class="state live">Live · public</span></div>
+        <h3>ZKicks</h3>
+        <p class="what">An agentic analyst over five years of books for a fictional sneaker reseller. Ask about Nike in winter and it writes SQL and draws the chart. Ask about a consignor's email and it searches documents and cites them.</p>
+        <div class="guard"><b>Guardrail</b>Seeded simulation, so CI knows the true answer. Abstention gated at 100%, read-only SQL, debits checked against credits every run.</div>
+        <dl class="built">
+          <dt>Agent</dt><dd>LangGraph ReAct agent, 8-call budget, inspectable JSONL trace</dd>
+          <dt>Data</dt><dd>DuckDB double-entry ledger, SQL generated by the agent</dd>
+          <dt>Retrieval</dt><dd>BM25 + embeddings, reciprocal-rank fusion</dd>
+          <dt>Stack</dt><dd>FastAPI with streamed answers (SSE), React 19, Plotly, Claude API</dd>
+          <dt>Ship</dt><dd>Vercel; eval badges written by GitHub Actions</dd>
+        </dl>
+        <div class="links"><a href="https://zkicks.vercel.app" target="_blank" rel="noopener">Demo ↗</a><a href="https://github.com/owlstormai/zkicks" target="_blank" rel="noopener">Code ↗</a><button type="button" class="shot" id="shot-zkicks" data-shots="zkicks">Screenshots · 2</button></div>
+      </article>
+
+      <article class="ch" data-k="rag health code">
+        <div class="ch-top"><span class="ch-id">CH-03</span><span class="state live">Live · public</span></div>
+        <h3>VitalPoint</h3>
+        <p class="what">Renewal-risk briefs across a 300-account book of medical practices. Every risk driver sits above the quoted evidence, and every brief says what it doesn't know.</p>
+        <div class="guard"><b>Guardrail</b>Tenant isolation by construction: there is no unscoped search API to misuse. Canary phrases in every account and a zero-leak CI gate.</div>
+        <dl class="built">
+          <dt>Retrieval</dt><dd>Hand-written BM25 + TF-IDF, reciprocal-rank fusion</dd>
+          <dt>Data</dt><dd>Read-only SQLite, seeded from twelve behavioral archetypes</dd>
+          <dt>AI</dt><dd>Optional Claude rewrite behind a citation-preserving contract</dd>
+          <dt>Ship</dt><dd>One Vercel Python function; GitHub Actions eval gates</dd>
+          <dt>Trim</dt><dd>Dropped the ML libraries: install went from about 160 MB to 19 MB, gates still green</dd>
+        </dl>
+        <div class="links"><a href="https://vitalpoint.vercel.app" target="_blank" rel="noopener">Demo ↗</a><a href="https://github.com/owlstormai/vitalpoint" target="_blank" rel="noopener">Code ↗</a><button type="button" class="shot" id="shot-vitalpoint" data-shots="vitalpoint">Screenshots · 2</button></div>
+      </article>
+
+      <article class="ch" data-k="agent">
+        <div class="ch-top"><span class="ch-id">CH-04</span><span class="state live">Live</span></div>
+        <h3>Clockwork</h3>
+        <p class="what">A follow-up engine for independent real estate agents. It started with a Hudson County agent who lost a lease-renewal commission to a calendar nobody was watching. Now it tells you who to call today, and why.</p>
+        <div class="guard"><b>Guardrail</b>Consent, quiet hours and frequency caps, checked as four invariants fuzzed across 200 randomized worlds on every commit.</div>
+        <dl class="built">
+          <dt>Engine</dt><dd>Four signal generators: lease clock, inbound leads, listing events, dormancy</dd>
+          <dt>Grounding</dt><dd>Evidence packs; an unsupported claim downgrades the card</dd>
+          <dt>Scale</dt><dd>A 1,200-person book on a simulation clock you can fast-forward</dd>
+          <dt>Ship</dt><dd>Vercel</dd>
+        </dl>
+        <div class="links"><a href="https://clockwork-demo.vercel.app" target="_blank" rel="noopener">Demo ↗</a><button type="button" class="shot" id="shot-clockwork" data-shots="clockwork">Screenshot</button></div>
+      </article>
+
+      <article class="ch" data-k="rag agent code">
+        <div class="ch-top"><span class="ch-id">CH-05</span><span class="state live">Public</span></div>
+        <h3>edgarm7</h3>
+        <p class="what">Retrieval over SEC 10-K filings with answers traceable to the exact filing, plus a research agent that compares companies side by side.</p>
+        <div class="guard"><b>Guardrail</b>A labeled benchmark scores every retrieval strategy (Recall@k, MRR, nDCG), and says "insufficient evidence" when the filing is silent.</div>
+        <dl class="built">
+          <dt>Vector</dt><dd>Postgres + pgvector, 768-d embeddings, token-aware chunking</dd>
+          <dt>Retrieval</dt><dd>Vector + BM25, reciprocal-rank fusion, cross-encoder rerank</dd>
+          <dt>Agent</dt><dd>LangGraph: plan, retrieve per company, check sufficiency, loop if thin</dd>
+          <dt>Models</dt><dd>Swappable: Claude, Gemini or local Ollama, one config line</dd>
+          <dt>Tests</dt><dd>96 offline unit tests; Docker Compose for Postgres</dd>
+        </dl>
+        <div class="links"><a href="https://github.com/owlstormai/edgarm7" target="_blank" rel="noopener">Code ↗</a><button type="button" class="shot" id="shot-edgarm7" data-shots="edgarm7">Screenshots · 2</button></div>
+      </article>
+
+      <article class="ch" data-k="rag code">
+        <div class="ch-top"><span class="ch-id">CH-06</span><span class="state live">Public</span></div>
+        <h3>onus</h3>
+        <p class="what">A regression gate for RAG systems. It grades against a golden set and fails the pull request when answer quality slips. The burden of proof is on the answer.</p>
+        <div class="guard"><b>Guardrail</b>A zero-tolerance gate can't pass by doing nothing: if an item crashed, the count reports "undefined", never a false clean zero.</div>
+        <dl class="built">
+          <dt>Gates</dt><dd>Floor, drop-vs-baseline and zero-tolerance, set in YAML</dd>
+          <dt>Metrics</dt><dd>Recall@5, abstention recall, citation accuracy, verbatim excerpts, PII leaks</dd>
+          <dt>CI</dt><dd>Exit codes: 0 pass, 1 gate failed, 2 harness error</dd>
+        </dl>
+        <div class="links"><a href="https://github.com/owlstormai/onus" target="_blank" rel="noopener">Code ↗</a><button type="button" class="shot" id="shot-onus" data-shots="onus">Screenshot</button></div>
+      </article>
+
+      <article class="ch" data-k="rag health code">
+        <div class="ch-top"><span class="ch-id">CH-07</span><span class="state live">Live · public</span></div>
+        <h3>MedSec</h3>
+        <p class="what">Grounded answers for vendor security questionnaires: HECVAT, CAIQ, HIPAA due diligence. Upload the spreadsheet, get it back answered with a provenance sheet.</p>
+        <div class="guard"><b>Guardrail</b>Every sentence carries a citation and is checked against its evidence, then routed: auto-answered, needs review, or abstained.</div>
+        <dl class="built">
+          <dt>Retrieval</dt><dd>BM25 + dense retrieval, reciprocal-rank fusion; BM25 catches control IDs like 164.312(a)(2)(iv)</dd>
+          <dt>Data</dt><dd>Postgres in production, SQLite locally; full audit trail</dd>
+          <dt>Stack</dt><dd>LangChain, FastAPI, Excel in and out, optional Claude drafter</dd>
+          <dt>Ship</dt><dd>Vercel with Marketplace Postgres; abstention evals in CI</dd>
+        </dl>
+        <div class="links"><a href="https://med-sec-jade.vercel.app" target="_blank" rel="noopener">Demo ↗</a><a href="https://github.com/owlstormai/MedSec" target="_blank" rel="noopener">Code ↗</a><button type="button" class="shot" id="shot-medsec" data-shots="medsec">Screenshot</button></div>
+      </article>
+
+      <article class="ch wide" data-k="agent">
+        <div class="ch-top"><span class="ch-id">CH-08</span><span class="state dev">In development</span></div>
+        <h3>FitCheckAI</h3>
+        <p class="what">Outfit scoring from a photo, inspired by my daughters. The first version ran on a fine-tuned Gemini Vision model; the native app runs on the Claude Vision API and is heading to TestFlight.</p>
+        <div class="guard"><b>Judgment call</b>Moved off a custom fine-tune to the Claude Vision API, and calibrated the scorer to a real 2.0 to 7.8 range so a 9 means something.</div>
+        <dl class="built">
+          <dt>App</dt><dd>React Native + Expo, TypeScript, 13 designed screens</dd>
+          <dt>Auth</dt><dd>Supabase Auth: email, Apple Sign-In, Face ID</dd>
+          <dt>Data</dt><dd>Supabase Postgres and Storage for photos and score history</dd>
+          <dt>AI</dt><dd>Claude Vision API</dd>
+        </dl>
+        <div class="links"><span class="muted">Demo on request</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="stack" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>The<br>stack</h2>
+      <p>What each build actually runs on. Every one of them was written in Claude Code; the rest of the stack is picked per problem, not per habit.</p>
+    </div>
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <thead><tr><th scope="col">Layer</th><th scope="col">TrendHUD</th><th scope="col">ZKicks</th><th scope="col">VitalPoint</th><th scope="col">Clockwork</th><th scope="col">edgarm7</th><th scope="col">onus</th><th scope="col">MedSec</th><th scope="col">FitCheckAI</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Claude Code</th><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td></tr>
+          <tr><th scope="row">Claude API</th><td>Opus · Haiku · vision</td><td>●</td><td>optional</td><td></td><td>●</td><td></td><td>optional</td><td>vision</td></tr>
+          <tr><th scope="row">Vercel</th><td>●</td><td>●</td><td>●</td><td>●</td><td></td><td></td><td>●</td><td></td></tr>
+          <tr><th scope="row">Supabase</th><td>Postgres</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Postgres · Storage</td></tr>
+          <tr><th scope="row">Auth</th><td>SMART on FHIR</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Supabase Auth</td></tr>
+          <tr><th scope="row">SQL</th><td>Postgres</td><td>DuckDB</td><td>SQLite</td><td></td><td>Postgres</td><td></td><td>Postgres</td><td>Postgres</td></tr>
+          <tr><th scope="row">Vector</th><td></td><td>embeddings</td><td>TF-IDF</td><td></td><td>pgvector</td><td></td><td>dense</td><td></td></tr>
+          <tr><th scope="row">RAG</th><td>●</td><td>hybrid + RRF</td><td>hybrid + RRF</td><td>evidence packs</td><td>hybrid + rerank</td><td>grades it</td><td>hybrid + RRF</td><td></td></tr>
+          <tr><th scope="row">Agents</th><td>analytic agent</td><td>LangGraph</td><td></td><td>signal engine</td><td>LangGraph</td><td></td><td></td><td></td></tr>
+          <tr><th scope="row">API</th><td></td><td>FastAPI</td><td>FastAPI</td><td></td><td>FastAPI</td><td>CLI</td><td>FastAPI</td><td></td></tr>
+          <tr><th scope="row">CI gates</th><td></td><td>evals</td><td>leak gate</td><td>fuzzing</td><td>benchmark</td><td>●</td><td>abstention</td><td></td></tr>
+          <tr><th scope="row">Domain</th><td>FHIR · LOINC</td><td>accounting</td><td>SaaS renewals</td><td>real estate</td><td>SEC filings</td><td>evals</td><td>security / HIPAA</td><td>consumer</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="method" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>House<br>rules</h2>
+      <p>The same five rules show up in everything I ship, from a weekend demo to a client deployment. They're the reason the demos survive contact with real users.</p>
+    </div>
+    <div class="spec">
+      <div><code>rule.cite_or_abstain</code><h3>Cite it or say "I don't know"</h3><p>An answer without a source is a guess. A system that admits a gap is one you can deploy.</p></div>
+      <div><code>rule.evals_gate_ci</code><h3>Evals block the merge</h3><p>Quality is a failing test, not a feeling after a demo. Regressions stop at the pull request.</p></div>
+      <div><code>rule.by_construction</code><h3>Safe by construction</h3><p>Isolation and permissions are built into the shape of the API, then verified by a machine.</p></div>
+      <div><code>rule.seeded_truth</code><h3>Know the right answer</h3><p>Seeded synthetic data means the test suite knows ground truth, so correctness is checkable.</p></div>
+      <div><code>rule.show_first</code><h3>A demo you can click</h3><p>If I can't put it in front of you running, it isn't done yet.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="signal" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>The long<br>signal</h2>
+      <p>Twenty-plus years, one through-line: take a hard technical problem, build something real, show it working, and help people adopt it.</p>
+    </div>
+    <div class="trace" id="trace">
+      <div class="fill" id="traceFill" aria-hidden="true"></div>
+      <div class="ev"><div class="yr">1998–2023</div><div class="body"><span class="org">Icy Cools · Founder &amp; CEO</span><h3>Zero to national retail, then an exit</h3><p>Built a consumer product line into CVS, Walgreens, Walmart and Amazon, ran the supply chain in China in Mandarin, and sold live on QVC for two years. Along the way I built my own sales, purchasing and shipping automation for retail vendors, because nothing off the shelf fit. Acquired in 2023.</p></div></div>
+      <div class="ev"><div class="yr">2002–04</div><div class="body"><span class="org">Rutgers / UMDNJ · Ph.D.</span><h3>Machine learning before the hype</h3><p>Mass detection in mammography, written in C++ with algorithms built by trial and error. No frameworks, no transformers, not much compute. It worked, just not well enough, and it taught me what "production-ready" really costs.</p></div></div>
+      <div class="ev"><div class="yr">2012–15</div><div class="body"><span class="org">HPI International · CTO</span><h3>A cold chain for China's blood supply</h3><p>After the Sichuan earthquake exposed failures in blood logistics, I built the whole system: insulated coolers, embedded temperature electronics, GPS, and a live SQL backend integrated with a hospital information system. Trials ran at Sanxia Three Gorges Hospital and the Wanzhou Blood Center.</p></div></div>
+      <div class="ev"><div class="yr">2015–20</div><div class="body"><span class="org">Stevens Institute of Technology · Adjunct Professor</span><h3>Teaching engineers to ship</h3><p>Designed graduate courses from scratch and taught more than 200 engineers. Mentored over 50 startup teams from idea to investor pitch.</p></div></div>
+      <div class="ev"><div class="yr">2015–22</div><div class="body"><span class="org">Beryllus Consulting · Principal</span><h3>Advisor inside the enterprise</h3><p>Workflow and technology adoption work with leadership at DHL, Philips, Invisalign and Amersham-Pharmacia, with engineering teams in China, New Zealand and Virginia.</p></div></div>
+      <div class="ev"><div class="yr">2022–now</div><div class="body"><span class="org">Owlstorm · Technical Founder &amp; Forward Deployed Engineer</span><h3>Embed, build, hand off</h3><p>Over 30 AI and automation deployments. I sit with the client, architect the stack, build on their data, and stay through production. More than $10M in partnerships closed on working demos.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="killed">
+      <div>
+        <span class="stamp">Status · stopped on purpose</span>
+        <h2><s>HemoCheck</s><br>killed, not shipped</h2>
+      </div>
+      <div>
+        <ol>
+          <li><span><b>The idea.</b> Estimate hemoglobin from a phone photo of the nailbed. The prototype worked end to end on iOS.</span></li>
+          <li><span><b>The wall.</b> Existing patents already cover nailbed-based estimation. That's real IP, not a technicality.</span></li>
+          <li><span><b>The pivot.</b> I tried the inner eyelid instead. Accuracy didn't hold, and there was no labeled clinical dataset to fix it honestly.</span></li>
+          <li><span><b>The call.</b> Stop. It stays a prototype until there's a clinical partner and a clear IP path.</span></li>
+        </ol>
+        <blockquote>You can't ship a medical screening tool on vibes.</blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="wrap">
+  <div class="plate" id="contact">
+    <span class="label">Open to forward-deployed, applied AI and architect roles · NYC metro or remote</span>
+    <h2 style="margin-top:18px">Bring me the<br><span>hard problem.</span></h2>
+    <div class="contact">
+      <div>
+        <span class="label">Email</span>
+        <span class="v" id="email">wojnicki@owlstorm.ai</span>
+        <button type="button" class="copy" id="copyEmail">Copy address</button>
+      </div>
+      <a href="https://linkedin.com/in/pauljwojnicki" target="_blank" rel="noopener"><span class="label">LinkedIn</span><span class="v">in/pauljwojnicki ↗</span></a>
+      <a href="https://github.com/owlstormai" target="_blank" rel="noopener"><span class="label">GitHub</span><span class="v">owlstormai ↗</span></a>
+    </div>
+  </div>
+  <footer><span>wojnicki.com · © <span id="yr">2026</span> Paul J. Wojnicki</span><span>Built in Claude Code · served by Vercel</span></footer>
+</div>
+
+
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="vTitle">
+  <div class="viewer-bar"><b id="vTitle">—</b><span class="cap" id="vCap"></span><span id="vCount"></span><button type="button" id="vPrev" aria-label="Previous screenshot">←</button><button type="button" id="vNext" aria-label="Next screenshot">→</button><button type="button" id="vClose">Close ✕</button></div>
+  <figure><img id="vImg" alt=""></figure>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  // clock
+  const clk = document.getElementById('clock');
+  const tick = () => { try { clk.textContent = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/New_York'}); } catch(e){} };
+  tick(); setInterval(tick, 30000);
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // ---------- oscilloscope ----------
+  const cv = document.getElementById('scope'), ctx = cv.getContext('2d');
+  const Y0 = 2000, Y1 = new Date().getFullYear() + 1;
+  const events = [
+    {y:2002.4, a:.95, w:.22, t:'2002 · ML thesis', k:1},
+    {y:2005.6, a:.62, w:.55, t:'2000s · retail sales & purchasing automation'},
+    {y:2012.8, a:.85, w:.30, t:'2012 · Chongqing cold chain', k:1},
+    {y:2015.6, a:.6,  w:.4,  t:'2015 · Stevens'},
+    {y:2019.5, a:.4,  w:.3,  t:''},
+    {y:2022.4, a:.7,  w:.3,  t:'2022 · Owlstorm'},
+    {y:2023.5, a:.8,  w:.18, t:'2023 · exit'},
+    {y:2024.9, a:.75, w:.25, t:''},
+    {y:2026.2, a:1.0, w:.22, t:'now · AI agents', k:1}
+  ];
+  const LANES = [15, 31, 47], TOP = 64;
+  let W=0,H=0,dpr=1,mx=-1, sweep=0, t0=performance.now();
+  function size(){
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    const r = cv.getBoundingClientRect(); W=r.width; H=r.height;
+    cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  const xOf = y => 24 + (y - Y0)/(Y1 - Y0) * (W - 48);
+  const yrOf = x => Y0 + (x - 24)/(W - 48) * (Y1 - Y0);
+  const noise = (x, t) => Math.sin(x*.9 + t*1.3)*.5 + Math.sin(x*2.3 - t*.7)*.3 + Math.sin(x*5.1 + t*2.1)*.2;
+  function sig(yr, t){
+    let v = noise(yr*3, t) * .05;
+    for (const e of events){
+      const d = (yr - e.y)/e.w;
+      v += e.a * Math.exp(-d*d) * (1 + .04*Math.sin(t*3 + e.y));
+      if (yr > e.y) v += e.a*.18*Math.exp(-(yr-e.y)*2.2)*Math.sin((yr-e.y)*14);
+    }
+    if (mx >= 0){ const d = (yr - yrOf(mx))/.5; v += .12*Math.exp(-d*d)*Math.sin(t*9); }
+    return v;
+  }
+  function draw(now){
+    const t = (now - t0)/1000;
+    const amber = css('--amber'), fg = css('--fg'), dim = css('--dim'), grid = css('--grid'), line = css('--line');
+    ctx.clearRect(0,0,W,H);
+    const base = H - 40, k = (base - (TOP + 12)) / 1.15;
+    const yPix = v => base - v*k;
+    // graticule (plot area only; the band above is reserved for labels)
+    ctx.strokeStyle = grid; ctx.lineWidth = 1;
+    for (let y=Y0; y<=Y1; y++){ const x = Math.round(xOf(y))+.5; ctx.beginPath(); ctx.moveTo(x,TOP); ctx.lineTo(x,H-26); ctx.stroke(); }
+    for (let i=0;i<=5;i++){ const y = Math.round(TOP + i*(H-26-TOP)/5)+.5; ctx.beginPath(); ctx.moveTo(24,y); ctx.lineTo(W-24,y); ctx.stroke(); }
+    ctx.fillStyle = dim; ctx.font = '11px "IBM Plex Mono", monospace'; ctx.textAlign='center';
+    const step = W < 560 ? 6 : 2;
+    for (let y=Y0; y<=Y1; y+=step) ctx.fillText(String(y), xOf(y), H-8);
+    sweep = reduce ? Y1 : Y0 + ((t*2.6) % (Y1 - Y0 + 3));
+    const path = (from, to) => { ctx.beginPath(); let first=true; for (let x=24; x<=W-24; x+=1.5){ const yr = yrOf(x); if (yr<from||yr>to) continue; const py = yPix(sig(yr,t)); if(first){ctx.moveTo(x,py);first=false;} else ctx.lineTo(x,py);} ctx.stroke(); };
+    ctx.lineJoin='round';
+    ctx.strokeStyle = amber; ctx.globalAlpha = .28; ctx.lineWidth = 1.5; path(Y0, Y1);
+    ctx.globalAlpha = 1; ctx.lineWidth = 2; ctx.shadowColor = amber; ctx.shadowBlur = 10; path(Math.max(Y0, sweep-4), Math.min(sweep, Y1));
+    ctx.shadowBlur = 0;
+    if (!reduce && sweep <= Y1){ const sx = xOf(sweep), sy = yPix(sig(sweep,t)); ctx.fillStyle = amber; ctx.beginPath(); ctx.arc(sx,sy,3.5,0,7); ctx.fill(); }
+    // labels: greedy lane packing so no two labels ever overlap
+    ctx.font = '11px "IBM Plex Mono", monospace'; ctx.textAlign='left';
+    const laneEnd = LANES.map(() => -Infinity);
+    const narrow = W < 640;
+    for (const e of events){
+      if (!e.t || (narrow && !e.k)) continue;
+      const x = xOf(e.y), y = yPix(sig(e.y,t)), s = 9;
+      const lit = reduce || sweep >= e.y;
+      const tw = ctx.measureText(e.t).width;
+      let left = Math.max(8, Math.min(x - 6, W - 8 - tw));
+      let lane = laneEnd.findIndex(end => left > end + 14);
+      if (lane < 0){ lane = laneEnd.indexOf(Math.min(...laneEnd)); left = Math.max(left, laneEnd[lane] + 14); }
+      laneEnd[lane] = left + tw;
+      const ly = LANES[lane];
+      // bracket around the peak
+      ctx.strokeStyle = lit ? fg : line; ctx.lineWidth = 1; ctx.beginPath();
+      ctx.moveTo(x-s,y-s+4); ctx.lineTo(x-s,y-s); ctx.lineTo(x-s+4,y-s);
+      ctx.moveTo(x+s-4,y-s); ctx.lineTo(x+s,y-s); ctx.lineTo(x+s,y-s+4);
+      ctx.moveTo(x-s,y+s-4); ctx.lineTo(x-s,y+s); ctx.lineTo(x-s+4,y+s);
+      ctx.moveTo(x+s-4,y+s); ctx.lineTo(x+s,y+s); ctx.lineTo(x+s,y+s-4);
+      ctx.stroke();
+      // leader from label down to the bracket
+      ctx.strokeStyle = lit ? dim : line; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(x+.5, ly+5); ctx.lineTo(x+.5, y-s-2); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = lit ? amber : dim; ctx.fillRect(x-1.5, ly+3, 3, 3);
+      ctx.fillStyle = lit ? fg : dim; ctx.fillText(e.t, left, ly);
+    }
+    if (mx >= 24 && mx <= W-24){ ctx.strokeStyle = dim; ctx.setLineDash([3,4]); ctx.beginPath(); ctx.moveTo(mx+.5,TOP); ctx.lineTo(mx+.5,H-26); ctx.stroke(); ctx.setLineDash([]); }
+    if (!reduce) requestAnimationFrame(draw);
+  }
+  const read = document.getElementById('cursorRead');
+  cv.addEventListener('pointermove', e => { const r = cv.getBoundingClientRect(); mx = e.clientX - r.left; const y = yrOf(mx); if (y>=Y0 && y<=Y1) read.innerHTML = 'CURSOR · <b>' + y.toFixed(1) + '</b>'; if (reduce) draw(performance.now()); });
+  cv.addEventListener('pointerleave', () => { mx=-1; read.innerHTML = 'CURSOR · <b>—</b>'; if (reduce) draw(performance.now()); });
+  addEventListener('resize', () => { size(); if (reduce) draw(performance.now()); });
+  size(); requestAnimationFrame(draw);
+  if (document.fonts) document.fonts.ready.then(()=>{ size(); if (reduce) draw(performance.now()); });
+
+  // ---------- build filters ----------
+  const btns = document.querySelectorAll('.filters button'), cards = document.querySelectorAll('#rack .ch');
+  btns.forEach(b => b.addEventListener('click', () => {
+    btns.forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    const f = b.dataset.f;
+    cards.forEach(c => { c.hidden = !(f==='all' || c.dataset.k.split(' ').includes(f)); });
+    try { localStorage.setItem('wj-filter', f); } catch(e){}
+  }));
+  try { const s = localStorage.getItem('wj-filter'); if (s){ const b=[...btns].find(x=>x.dataset.f===s); if (b) b.click(); } } catch(e){}
+
+  // ---------- career trace fills with scroll ----------
+  const trace = document.getElementById('trace'), fill = document.getElementById('traceFill'), evs = trace.querySelectorAll('.ev');
+  function onScroll(){
+    const r = trace.getBoundingClientRect(), mid = innerHeight*.6;
+    const p = Math.max(0, Math.min(1, (mid - r.top)/r.height));
+    fill.style.height = (p*(r.height-16)) + 'px';
+    evs.forEach(ev => { const er = ev.getBoundingClientRect(); ev.classList.toggle('on', er.top + 30 < mid); });
+  }
+  addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+
+  // ---------- screenshot viewer ----------
+  const SHOTS = {
+    trendhud: {name:'TrendHUD', items:[['shots/trendhud-chart.jpg','Live chart: 18-month synthetic AML case, treatment timeline over synchronized lab panels'],['shots/trendhud-agent.jpg','Analytic agent: flags ranked by clinical significance, each citing its dates and values'],['shots/trendhud-home.jpg','trendhud.com']]},
+    zkicks: {name:'ZKicks', items:[['shots/zkicks-answer.jpg','One question, one SQL query against the books, a table, a chart and the agent trace'],['shots/zkicks-home.jpg','The chat, ready for a question']]},
+    vitalpoint: {name:'VitalPoint', items:[['shots/vitalpoint-desk.jpg','Renewal desk: 300 accounts scored and ranked by risk'],['shots/vitalpoint-brief.jpg','A brief: each risk driver directly above its quoted evidence']]},
+    clockwork: {name:'Clockwork', items:[['shots/clockwork.jpg','Call today: who to call, why, and what to ask, on a fast-forwardable sim clock']]},
+    edgarm7: {name:'edgarm7', items:[['shots/edgarm7-answer.jpg','A grounded answer with citations back to the exact 10-K section'],['shots/edgarm7-ui.jpg','Web interface']]},
+    onus: {name:'onus', items:[['shots/onus.jpg','A real regression caught: recall dropped and a crashed item reports "undefined", not a false zero']]},
+    medsec: {name:'MedSec', items:[['shots/medsec.jpg','Dashboard: routing breakdown, review queue and eval metrics with gates passed']]}
+  };
+  const V = {el:document.getElementById('viewer'), img:document.getElementById('vImg'), t:document.getElementById('vTitle'), cap:document.getElementById('vCap'), n:document.getElementById('vCount')};
+  let cur = null, idx = 0, opener = null;
+  function show(){ const [src,cap] = cur.items[idx]; V.img.src = src; V.img.alt = cur.name + ': ' + cap; V.t.textContent = cur.name; V.cap.textContent = cap; V.n.textContent = cur.items.length > 1 ? (idx+1)+' / '+cur.items.length : ''; document.getElementById('vPrev').hidden = document.getElementById('vNext').hidden = cur.items.length < 2; }
+  function openV(key, btn){ cur = SHOTS[key]; if (!cur) return; idx = 0; opener = btn; show(); V.el.hidden = false; document.body.style.overflow='hidden'; document.getElementById('vClose').focus(); }
+  function closeV(){ V.el.hidden = true; document.body.style.overflow=''; if (opener) opener.focus(); }
+  document.querySelectorAll('.shot').forEach(b => b.addEventListener('click', () => openV(b.dataset.shots, b)));
+  document.getElementById('vClose').addEventListener('click', closeV);
+  document.getElementById('vPrev').addEventListener('click', () => { idx = (idx - 1 + cur.items.length) % cur.items.length; show(); });
+  document.getElementById('vNext').addEventListener('click', () => { idx = (idx + 1) % cur.items.length; show(); });
+  V.el.addEventListener('click', e => { if (e.target === V.el || e.target.tagName === 'FIGURE') closeV(); });
+  addEventListener('keydown', e => { if (V.el.hidden) return; if (e.key === 'Escape') closeV(); if (e.key === 'ArrowRight') document.getElementById('vNext').click(); if (e.key === 'ArrowLeft') document.getElementById('vPrev').click(); });
+
+  // ---------- copy email ----------
+  const cb = document.getElementById('copyEmail'), em = document.getElementById('email');
+  cb.addEventListener('click', () => {
+    const done = () => { cb.textContent = 'Copied'; setTimeout(()=>cb.textContent='Copy address', 1600); };
+    const sel = () => { const r = document.createRange(); r.selectNodeContents(em); const s = getSelection(); s.removeAllRanges(); s.addRange(r); cb.textContent = 'Selected, press ⌘C'; };
+    try { navigator.clipboard.writeText(em.textContent).then(done, sel); } catch(e){ sel(); }
+  });
+})();
+</script>
+</body>
+</html>
