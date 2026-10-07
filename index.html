@@ -73,7 +73,7 @@ p{margin:0}
 .scope-head{border-bottom:1px solid var(--line)}
 .scope-foot{border-top:1px solid var(--line)}
 .scope-head b,.scope-foot b{color:var(--fg);font-weight:500}
-.scope canvas{display:block;width:100%;height:clamp(250px,30vw,340px)}
+.scope canvas{display:block;width:100%;height:clamp(290px,32vw,380px)}
 .readouts{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
 .readouts div{padding:14px 16px;border-right:1px solid var(--line);min-width:0}
 .readouts div:last-child{border-right:0}
@@ -243,9 +243,9 @@ footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;paddin
       <div class="scope-head"><span>CH1 · <b>CAREER SIGNAL</b></span><span>TIMEBASE 1 yr/div · TRIG <b>ship</b></span><span id="cursorRead">CURSOR · <b>—</b></span></div>
       <canvas id="scope"></canvas>
       <div class="readouts">
-        <div><strong>2002</strong><span>First ML system · mammography</span></div>
+        <div><strong>2002</strong><span>First ML system · M.S. thesis</span></div>
         <div><strong>30+</strong><span>AI &amp; automation deployments</span></div>
-        <div><strong>3</strong><span>Companies founded · 1 exit</span></div>
+        <div><strong>5</strong><span>Companies founded · 3 exits</span></div>
         <div><strong>200+</strong><span>Graduate engineers taught</span></div>
       </div>
     </figure>
@@ -446,8 +446,9 @@ footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;paddin
     </div>
     <div class="trace" id="trace">
       <div class="fill" id="traceFill" aria-hidden="true"></div>
-      <div class="ev"><div class="yr">1998–2023</div><div class="body"><span class="org">Icy Cools · Founder &amp; CEO</span><h3>Zero to national retail, then an exit</h3><p>Built a consumer product line into CVS, Walgreens, Walmart and Amazon, ran the supply chain in China in Mandarin, and sold live on QVC for two years. Along the way I built my own sales, purchasing and shipping automation for retail vendors, because nothing off the shelf fit. Acquired in 2023.</p></div></div>
-      <div class="ev"><div class="yr">2002–04</div><div class="body"><span class="org">Rutgers / UMDNJ · Ph.D.</span><h3>Machine learning before the hype</h3><p>Mass detection in mammography, written in C++ with algorithms built by trial and error. No frameworks, no transformers, not much compute. It worked, just not well enough, and it taught me what "production-ready" really costs.</p></div></div>
+      <div class="ev"><div class="yr">1998–2023</div><div class="body"><span class="org">Icy Cools · Founder &amp; CEO</span><h3>Zero to national retail, then an exit</h3><p>Built a consumer product line into CVS, Walgreens, Walmart and Amazon, ran the supply chain in China in Mandarin, and sold live on QVC for two years. Acquired in 2023.</p></div></div>
+      <div class="ev"><div class="yr">2002–04</div><div class="body"><span class="org">UCLA → Rutgers / UMDNJ · M.S. 2002 · Ph.D. 2004</span><h3>Machine learning before the hype</h3><p>An M.S. thesis on machine learning in 2002, then a Ph.D. on mass detection in mammography in 2004. All of it written in C++ with algorithms built by trial and error. No frameworks, no transformers, not much compute. It worked, just not well enough, and it taught me what "production-ready" really costs.</p></div></div>
+      <div class="ev"><div class="yr">2000s</div><div class="body"><span class="org">Systems for my own businesses</span><h3>Automation before it was a category</h3><p>Built my own sales, purchasing and shipping automation for selling into national retail vendors, because nothing off the shelf fit. Also wrote automated weighing calibration software.</p></div></div>
       <div class="ev"><div class="yr">2012–15</div><div class="body"><span class="org">HPI International · CTO</span><h3>A cold chain for China's blood supply</h3><p>After the Sichuan earthquake exposed failures in blood logistics, I built the whole system: insulated coolers, embedded temperature electronics, GPS, and a live SQL backend integrated with a hospital information system. Trials ran at Sanxia Three Gorges Hospital and the Wanzhou Blood Center.</p></div></div>
       <div class="ev"><div class="yr">2015–20</div><div class="body"><span class="org">Stevens Institute of Technology · Adjunct Professor</span><h3>Teaching engineers to ship</h3><p>Designed graduate courses from scratch and taught more than 200 engineers. Mentored over 50 startup teams from idea to investor pitch.</p></div></div>
       <div class="ev"><div class="yr">2015–22</div><div class="body"><span class="org">Beryllus Consulting · Principal</span><h3>Advisor inside the enterprise</h3><p>Workflow and technology adoption work with leadership at DHL, Philips, Invisalign and Amersham-Pharmacia, with engineering teams in China, New Zealand and Virginia.</p></div></div>
@@ -515,17 +516,20 @@ footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;paddin
   const cv = document.getElementById('scope'), ctx = cv.getContext('2d');
   const Y0 = 2000, Y1 = new Date().getFullYear() + 1;
   const events = [
-    {y:2002.4, a:.95, w:.22, t:'2002 · ML thesis', k:1},
-    {y:2005.6, a:.62, w:.55, t:'2000s · retail sales & purchasing automation'},
+    {y:2002.3, a:.78, w:.20, t:'2002 · M.S. ML thesis', k:1},
+    {y:2004.4, a:.92, w:.22, t:'2004 · Ph.D. · mammography ML'},
+    {y:2005.9, a:.40, w:.28, t:'sales & purchasing automation'},
+    {y:2007.5, a:.36, w:.28, t:'retail shipping automation'},
+    {y:2009.2, a:.44, w:.28, t:'weighing calibration software'},
     {y:2012.8, a:.85, w:.30, t:'2012 · Chongqing cold chain', k:1},
-    {y:2015.6, a:.6,  w:.4,  t:'2015 · Stevens'},
-    {y:2019.5, a:.4,  w:.3,  t:''},
+    {y:2015.6, a:.6,  w:.35, t:'2015 · Stevens'},
+    {y:2018.4, a:.52, w:.35, t:'Beryllus · DHL, Philips, Invisalign'},
     {y:2022.4, a:.7,  w:.3,  t:'2022 · Owlstorm'},
     {y:2023.5, a:.8,  w:.18, t:'2023 · exit'},
     {y:2024.9, a:.75, w:.25, t:''},
     {y:2026.2, a:1.0, w:.22, t:'now · AI agents', k:1}
   ];
-  const LANES = [15, 31, 47], TOP = 64;
+  const LANES = [14, 29, 44, 59, 74], TOP = 88;
   let W=0,H=0,dpr=1,mx=-1, sweep=0, t0=performance.now();
   function size(){
     dpr = Math.min(window.devicePixelRatio||1, 2);
